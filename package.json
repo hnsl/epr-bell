@@ -1,0 +1,14 @@
+{
+  "name": "epr-bell",
+  "version": "1.0.0",
+  "description": "",
+  "main": "epr-bell.js",
+  "scripts": {
+    "start": "node epr-bell.js"
+  },
+  "author": "",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "mustache": "^2.1.3"
+  }
+}

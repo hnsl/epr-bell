@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bell Inequality Experiment</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    table {
+      border-collapse: collapse;
+    }
+    table td, table th {
+      border: 1px solid black;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="results-data" style="display: none;">{{ results }}</div>
+  <div id="results-graph"></div>
+  <table id="result-table">
+    <thead>
+      <tr>
+        <th>Degrees</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    var N_SIML = {{ N_SIML }};
+    var N_ARES = {{ N_ARES }};
+    var results = JSON.parse($("#results-data").text());
+    var n_groups = 0;
+    var items = new vis.DataSet();
+    var groups = new vis.DataSet();
+    var tdata = [];
+    var tdata_idx = {};
+    for (var group_name in results) {
+      groups.add({
+        id: n_groups,
+        content: group_name
+      });
+      var hvt_res = results[group_name];
+      for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+        var x = (((Math.PI / 2) / N_ARES) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
+        var y = hvt_res[i_angle] / (N_SIML / N_ARES);
+        items.add({
+          x: 10 * x,
+          y: y,
+          group: n_groups
+        });
+        var tidx = Math.round(x * 10) / 10;
+        if (!tdata_idx[tidx]) {
+          var rdata = tdata_idx[tidx] = [];
+          rdata.push(tidx);
+          tdata.push(rdata);
+        }
+        tdata_idx[tidx].push(parseFloat(Math.round(y * 1e5) / 1e5).toFixed(4));
+      }
+      $("#result-table thead tr").append(
+        $("<th>").text(group_name)
+      );
+      n_groups++;
+    }
+    for (var row in tdata) {
+      var tr = $("<tr>");
+      var rdata = tdata[row];
+      for (var i = 0; i < rdata.length; i++) {
+        var col = rdata[i];
+        if (i > 1) {
+          col += " (" + (Math.round(((col - rdata[1]) / rdata[1]) * 1e5) / 1e3) + "%)";
+        }
+        tr.append($("<td>").text(col));
+      }
+      $("#result-table tbody").append(tr);
+    }
+    var options = {
+      dataAxis: {
+        left: {
+          format: function(v) {
+            return Math.round(v * 1000) / 1000;
+          },
+          range: {min: 0}
+        }
+      },
+      legend: true,
+      // Hack: The X axis is actually a timeline with miliseconds presented as degrees.
+      start: 0.0,
+      min: 0,
+      end: 900,
+      max: 900,
+      showMajorLabels: false,
+      showMinorLabels: true,
+      format: {minorLabels: {millisecond: "SS"}},
+      timeAxis: {scale: "millisecond", step: 100}
+    };
+    var container = $("#results-graph").get(0);
+    var graph2d = new vis.Graph2d(container, null, options);
+    graph2d.setGroups(groups);
+    graph2d.setItems(items);
+    window.graph2d = graph2d;
+  </script>
+</body>
+</html>

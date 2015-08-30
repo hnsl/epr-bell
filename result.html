@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bell Inequality Experiment</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.css" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    table {
+      border-collapse: collapse;
+    }
+    table td, table th {
+      border: 1px solid black;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="results-data" style="display: none;">{&quot;QM Prediction&quot;:[15616,15540,15391,15168,14875,14514,14088,13601,13059,12466,11829,11153,10444,9711,8959,8196,7429,6666,5914,5181,4472,3796,3159,2566,2024,1537,1111,750,457,234,85,9],&quot;VIII Example HVT&quot;:[15414,14894,14426,13859,13218,12905,12453,11930,11250,11121,10211,9988,9442,9106,8492,8062,7597,7036,6638,5978,5359,5061,4707,4130,3738,3186,2822,2152,1651,1219,756,242]}</div>
+  <div id="results-graph"></div>
+  <table id="result-table">
+    <thead>
+      <tr>
+        <th>Degrees</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    var N_SIML = 1000000;
+    var N_ARES = 32;
+    var results = JSON.parse($("#results-data").text());
+    var n_groups = 0;
+    var items = new vis.DataSet();
+    var groups = new vis.DataSet();
+    var tdata = [];
+    var tdata_idx = {};
+    for (var group_name in results) {
+      groups.add({
+        id: n_groups,
+        content: group_name
+      });
+      var hvt_res = results[group_name];
+      for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+        var x = (((Math.PI / 2) / N_ARES) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
+        var y = hvt_res[i_angle] / (N_SIML / N_ARES);
+        items.add({
+          x: 10 * x,
+          y: y,
+          group: n_groups
+        });
+        var tidx = Math.round(x * 10) / 10;
+        if (!tdata_idx[tidx]) {
+          var rdata = tdata_idx[tidx] = [];
+          rdata.push(tidx);
+          tdata.push(rdata);
+        }
+        tdata_idx[tidx].push(parseFloat(Math.round(y * 1e5) / 1e5).toFixed(4));
+      }
+      $("#result-table thead tr").append(
+        $("<th>").text(group_name)
+      );
+      n_groups++;
+    }
+    for (var row in tdata) {
+      var tr = $("<tr>");
+      var rdata = tdata[row];
+      for (var i = 0; i < rdata.length; i++) {
+        var col = rdata[i];
+        if (i > 1) {
+          col += " (" + (Math.round(((col - rdata[1]) / rdata[1]) * 1e5) / 1e3) + "%)";
+        }
+        tr.append($("<td>").text(col));
+      }
+      $("#result-table tbody").append(tr);
+    }
+    var options = {
+      dataAxis: {
+        left: {
+          format: function(v) {
+            return Math.round(v * 1000) / 1000;
+          },
+          range: {min: 0}
+        }
+      },
+      legend: true,
+      // Hack: The X axis is actually a timeline with miliseconds presented as degrees.
+      start: 0.0,
+      min: 0,
+      end: 900,
+      max: 900,
+      showMajorLabels: false,
+      showMinorLabels: true,
+      format: {minorLabels: {millisecond: "SS"}},
+      timeAxis: {scale: "millisecond", step: 100}
+    };
+    var container = $("#results-graph").get(0);
+    var graph2d = new vis.Graph2d(container, null, options);
+    graph2d.setGroups(groups);
+    graph2d.setItems(items);
+    window.graph2d = graph2d;
+  </script>
+</body>
+</html>
