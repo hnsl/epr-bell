@@ -38,29 +38,37 @@
     for (var group_name in results) {
       groups.add({
         id: n_groups,
-        content: group_name
+        content: group_name + " Bias"
+      });
+      groups.add({
+        id: n_groups + 1,
+        content: group_name + " Incidents"
+      });
+      groups.add({
+        id: n_groups + 2,
+        content: group_name + " Coincidents"
       });
       var hvt_res = results[group_name];
       for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
         var x = (((Math.PI / 2) / N_ARES) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
-        var y = hvt_res[i_angle] / (N_SIML / N_ARES);
-        items.add({
-          x: 10 * x,
-          y: y,
-          group: n_groups
-        });
+        var y_bias = hvt_res[i_angle].bias / (N_SIML / N_ARES);
+        var y_in = hvt_res[i_angle].incidents / (N_SIML / N_ARES);
+        var y_coi = hvt_res[i_angle].coincidents / (N_SIML / N_ARES);
+        items.add({x: 10 * x, y: y_bias, group: n_groups});
+        items.add({x: 10 * x, y: y_in, group: n_groups + 1});
+        items.add({x: 10 * x, y: y_coi, group: n_groups + 2});
         var tidx = Math.round(x * 10) / 10;
         if (!tdata_idx[tidx]) {
           var rdata = tdata_idx[tidx] = [];
           rdata.push(tidx);
           tdata.push(rdata);
         }
-        tdata_idx[tidx].push(parseFloat(Math.round(y * 1e5) / 1e5).toFixed(4));
+        tdata_idx[tidx].push(parseFloat(Math.round(y_coi * 1e5) / 1e5).toFixed(4));
       }
       $("#result-table thead tr").append(
         $("<th>").text(group_name)
       );
-      n_groups++;
+      n_groups += 3;
     }
     for (var row in tdata) {
       var tr = $("<tr>");
@@ -79,8 +87,7 @@
         left: {
           format: function(v) {
             return Math.round(v * 1000) / 1000;
-          },
-          range: {min: 0}
+          }
         }
       },
       legend: true,
