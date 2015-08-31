@@ -4,8 +4,8 @@ var mustache = require('mustache');
 var util = require('./util.js');
 var hvts = require('./hvt.js');
 
-// We do 500k simulations per theory with an angular resolution of 32.
-var N_SIML = 500000;
+// We do 4M simulations per theory with an angular resolution of 32.
+var N_SIML = 4e6;
 var N_ARES = 32;
 
 // Create a reference result which represents the QM prediction and the actual

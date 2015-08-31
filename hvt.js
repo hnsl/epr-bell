@@ -24,5 +24,20 @@ module.exports = [
             return (Math.abs(γ - λ) <= Math.PI / 4)
                 || (Math.abs(γ - λ) > 3 * Math.PI / 4);
         }
+    },
+    {
+        name: "Custom Naive HVT 0",
+        entangle: function(p_angle) {
+            // We store the exact polarisation angle in the hidden state.
+            var λ = p_angle;
+            return [λ, λ];
+        },
+        filter: function(γ, λ) {
+            // Introduce the probability here instead via the standard
+            // probability formula of photon passing a polarizer.
+            var Θ = Math.abs(γ - λ);
+            var b = 1.33; // Curve fitting factor.
+            return util.rndFn() < b * (0.5 + 0.5 * Math.cos(2 * Θ));
+        }
     }
 ];
