@@ -9,13 +9,25 @@ var hvts = require('./hvt.js');
 var N_SIML = 4e6;
 var N_ARES = 64;
 // We use a special lower angular resolution for the E + Smax search. This is
-// because the brute fore search for the highest S has a complexity of O(n ^ 4)
+// because the brute fore search for the highest S has a complexity of O(n ^ 3)
 // and because we don't get enough data for the (n ^ 2) angle permutations.
 var N_SMAX_AR = 16;
 
 // Converts radians to the respective index.
 var radtoiFn = function(rad, ang_res) {
     return Math.floor(ang_res * rad / (Math.PI / 2));
+};
+
+var maximizeParam = function(from, to, fn) {
+    var best = -Infinity, param = null;
+    for (var i = from; i < to; i++) {
+        var val = fn(i);
+        if (val > best) {
+            best = val;
+            param = i;
+        }
+    }
+    return {value: best, param: param};
 };
 
 // Iterate through our hidden variable theories and test them one-by-one.
@@ -116,16 +128,21 @@ hvts.forEach(function(hvt) {
             return e_result[a1_i * N_SMAX_AR + a2_i];
         };
         for (var a_i = 0; a_i < N_SMAX_AR; a_i++) {
-            var s_max = Number.NEGATIVE_INFINITY;
+            var s_max = -Infinity;
             var s_angles = null;
-            for (var b_i = 0; b_i < N_SMAX_AR; b_i++)
-            for (var ap_i = 0; ap_i < N_SMAX_AR; ap_i++)
-            for (var bp_i = 0; bp_i < N_SMAX_AR; bp_i++) {
-                var S = getE(a_i, b_i).value - getE(a_i, bp_i).value
-                    + getE(ap_i, b_i).value + getE(ap_i, bp_i).value;
+            for (var ap_i = 0; ap_i < N_SMAX_AR; ap_i++) {
+                // E(a, b) + E(a', b) and E(a', b') - E(a, b') are independent,
+                // so to maximize their sum, maximize them both individually.
+                var sb = maximizeParam(0, N_SMAX_AR, function(b_i) {
+                    return getE(a_i, b_i).value + getE(ap_i, b_i).value;
+                });
+                var sbp = maximizeParam(0, N_SMAX_AR, function(bp_i) {
+                    return getE(ap_i, bp_i).value - getE(a_i, bp_i).value;
+                });
+                var S = sb.value + sbp.value;
                 if (S > s_max) {
                     s_max = S;
-                    s_angles = [a_i, b_i, ap_i, bp_i];
+                    s_angles = [a_i, sb.param, ap_i, sbp.param];
                 }
             }
             // TODO: Calculate uncertainty for this S max measurement.
