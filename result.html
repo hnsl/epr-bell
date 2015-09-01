@@ -3,8 +3,7 @@
 <head>
   <title>Bell Inequality Experiment</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.css" rel="stylesheet" type="text/css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
   <style type="text/css">
     table {
       border-collapse: collapse;
@@ -16,89 +15,209 @@
   </style>
 </head>
 <body>
-  <div id="results-data" style="display: none;">{&quot;QM Prediction&quot;:[62462,62162,61563,60673,59500,58054,56350,54405,52236,49866,47316,44611,41778,38843,35835,32783,29717,26665,23657,20722,17889,15184,12634,10264,8095,6150,4446,3000,1827,937,338,38],&quot;VIII Example HVT&quot;:[61514,59154,57288,55514,53730,51913,50289,47774,46105,44493,41991,39752,38039,36100,33909,31984,30111,28437,26493,24092,22683,20304,18285,16594,14597,12732,10909,8749,6679,4896,2986,983],&quot;Custom Naive HVT 0&quot;:[62330,62282,62062,61405,60782,58691,57454,56000,54056,50641,47875,44610,41738,38579,34994,31757,28670,25220,22058,19354,16569,14028,11559,9382,7265,5513,4038,2603,1613,799,328,30]}</div>
-  <div id="results-graph"></div>
-  <table id="result-table">
+  <h1>Coincidents</h1>
+  <small>
+    Main result, the probability of conincidence in relation to the relative
+    angle of the detectors.
+  </small>
+  <div id="graph-coincidents" style="width: 100%; height: 500px"></div>
+
+  <h1>Maximum S values</h1>
+  <small>
+    Main result, the maximum possible S value for a selected angle as (a).
+    The bell theorem states that it's impossible for any HVT to exceed a
+    maximum S value of 2 for any selected 4 angles.
+  </small>
+  <div id="graph-s-max" style="width: 100%; height: 400px"></div>
+  <table id="table-s-max">
     <thead>
       <tr>
-        <th>Degrees</th>
+        <th>Theory</th>
+        <th>S Max</th>
+        <th>Angle A</th>
+        <th>Angle B</th>
+        <th>Angle C</th>
+        <th>Angle D</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <tr></tr>
+    </tbody>
   </table>
+
+  <h1>Angle incident probability per detector relationship</h1>
+  <small>
+    Hygiene factor for the EPR. There should normally not be a correlation
+    between the angle of measurement and probability of incident per detector
+    as this would be inconsistent with the QM Prediction and violate reality.
+  </small>
+  <div id="graph-incidents" style="width: 100%; height: 300px"></div>
+
+  <h1>Angle A-B detector bias</h1>
+  <small>
+    Hygiene factor for the EPR. There should normally not be any significant
+    bias between the A or B detector for any angle of measurement
+    as this would be inconsistent with the QM Prediction and violate reality.
+  </small>
+  <div id="graph-bias" style="width: 100%; height: 200px"></div>
+
+  <h1>Total samples</h1>
+  <small>
+    Total samples/data points for each respective angle. Displays differences
+    in resolution between angles. There is one respective resolution for
+    incidents and one for coincidents.
+  </small>
+  <div id="graph-total" style="width: 100%; height: 200px"></div>
+
+  <div id="result-data" style="display: none;">{&quot;QM Prediction&quot;:{&quot;result&quot;:[{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:31245},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:31208},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:31132},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:31020},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:30870},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:30684},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:30461},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:30203},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:29910},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:29582},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:29220},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:28826},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:28400},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:27943},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:27456},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:26941},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:26399},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:25831},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:25238},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:24622},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:23984},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:23327},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:22650},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:21957},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:21248},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:20526},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:19792},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:19048},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:18296},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:17538},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:16774},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:16008},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:15242},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:14476},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:13712},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:12954},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:12202},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:11458},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:10724},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:10002},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:9293},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:8600},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:7923},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:7266},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:6628},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:6012},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:5419},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:4851},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:4309},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:3794},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:3307},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:2850},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:2424},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:2030},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:1668},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:1340},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:1047},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:789},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:566},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:380},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:230},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:118},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:42},{&quot;total_i&quot;:125000,&quot;total_ci&quot;:62500,&quot;bias&quot;:0,&quot;incidents&quot;:62500,&quot;coincidents&quot;:5}],&quot;s_data&quot;:[{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]},&quot;VIII Example HVT&quot;:{&quot;result&quot;:[{&quot;total_i&quot;:320813,&quot;total_ci&quot;:62529,&quot;bias&quot;:159,&quot;incidents&quot;:160145,&quot;coincidents&quot;:31040},{&quot;total_i&quot;:237792,&quot;total_ci&quot;:62500,&quot;bias&quot;:-332,&quot;incidents&quot;:118770,&quot;coincidents&quot;:30478},{&quot;total_i&quot;:205365,&quot;total_ci&quot;:61967,&quot;bias&quot;:-106,&quot;incidents&quot;:102918,&quot;coincidents&quot;:29874},{&quot;total_i&quot;:186422,&quot;total_ci&quot;:62493,&quot;bias&quot;:-435,&quot;incidents&quot;:93497,&quot;coincidents&quot;:29405},{&quot;total_i&quot;:170261,&quot;total_ci&quot;:62740,&quot;bias&quot;:116,&quot;incidents&quot;:84952,&quot;coincidents&quot;:29065},{&quot;total_i&quot;:159215,&quot;total_ci&quot;:62893,&quot;bias&quot;:107,&quot;incidents&quot;:79607,&quot;coincidents&quot;:28750},{&quot;total_i&quot;:148882,&quot;total_ci&quot;:62270,&quot;bias&quot;:293,&quot;incidents&quot;:74337,&quot;coincidents&quot;:27954},{&quot;total_i&quot;:142180,&quot;total_ci&quot;:62721,&quot;bias&quot;:413,&quot;incidents&quot;:71291,&quot;coincidents&quot;:27701},{&quot;total_i&quot;:135225,&quot;total_ci&quot;:62685,&quot;bias&quot;:375,&quot;incidents&quot;:67169,&quot;coincidents&quot;:27300},{&quot;total_i&quot;:128746,&quot;total_ci&quot;:62530,&quot;bias&quot;:4,&quot;incidents&quot;:64744,&quot;coincidents&quot;:26523},{&quot;total_i&quot;:124049,&quot;total_ci&quot;:62553,&quot;bias&quot;:385,&quot;incidents&quot;:61931,&quot;coincidents&quot;:26232},{&quot;total_i&quot;:120447,&quot;total_ci&quot;:62087,&quot;bias&quot;:-190,&quot;incidents&quot;:60062,&quot;coincidents&quot;:25232},{&quot;total_i&quot;:115838,&quot;total_ci&quot;:62834,&quot;bias&quot;:0,&quot;incidents&quot;:57694,&quot;coincidents&quot;:25091},{&quot;total_i&quot;:112111,&quot;total_ci&quot;:62439,&quot;bias&quot;:-65,&quot;incidents&quot;:56011,&quot;coincidents&quot;:24510},{&quot;total_i&quot;:109892,&quot;total_ci&quot;:62570,&quot;bias&quot;:124,&quot;incidents&quot;:54896,&quot;coincidents&quot;:24042},{&quot;total_i&quot;:106031,&quot;total_ci&quot;:62656,&quot;bias&quot;:201,&quot;incidents&quot;:52957,&quot;coincidents&quot;:23657},{&quot;total_i&quot;:103298,&quot;total_ci&quot;:62536,&quot;bias&quot;:-477,&quot;incidents&quot;:51667,&quot;coincidents&quot;:23272},{&quot;total_i&quot;:101117,&quot;total_ci&quot;:62135,&quot;bias&quot;:95,&quot;incidents&quot;:50509,&quot;coincidents&quot;:22538},{&quot;total_i&quot;:99100,&quot;total_ci&quot;:62297,&quot;bias&quot;:-229,&quot;incidents&quot;:49487,&quot;coincidents&quot;:21997},{&quot;total_i&quot;:97007,&quot;total_ci&quot;:62760,&quot;bias&quot;:-211,&quot;incidents&quot;:48337,&quot;coincidents&quot;:21749},{&quot;total_i&quot;:95269,&quot;total_ci&quot;:62518,&quot;bias&quot;:-41,&quot;incidents&quot;:47793,&quot;coincidents&quot;:21215},{&quot;total_i&quot;:93658,&quot;total_ci&quot;:62598,&quot;bias&quot;:-152,&quot;incidents&quot;:46766,&quot;coincidents&quot;:20914},{&quot;total_i&quot;:92455,&quot;total_ci&quot;:62637,&quot;bias&quot;:-397,&quot;incidents&quot;:46021,&quot;coincidents&quot;:20445},{&quot;total_i&quot;:91823,&quot;total_ci&quot;:62660,&quot;bias&quot;:299,&quot;incidents&quot;:45795,&quot;coincidents&quot;:19827},{&quot;total_i&quot;:90011,&quot;total_ci&quot;:62282,&quot;bias&quot;:234,&quot;incidents&quot;:44798,&quot;coincidents&quot;:19272},{&quot;total_i&quot;:89058,&quot;total_ci&quot;:61910,&quot;bias&quot;:-50,&quot;incidents&quot;:44468,&quot;coincidents&quot;:18680},{&quot;total_i&quot;:88305,&quot;total_ci&quot;:62426,&quot;bias&quot;:188,&quot;incidents&quot;:43754,&quot;coincidents&quot;:17994},{&quot;total_i&quot;:87778,&quot;total_ci&quot;:62333,&quot;bias&quot;:78,&quot;incidents&quot;:43614,&quot;coincidents&quot;:17722},{&quot;total_i&quot;:87454,&quot;total_ci&quot;:62493,&quot;bias&quot;:-504,&quot;incidents&quot;:43736,&quot;coincidents&quot;:17359},{&quot;total_i&quot;:87066,&quot;total_ci&quot;:62338,&quot;bias&quot;:-267,&quot;incidents&quot;:43139,&quot;coincidents&quot;:16661},{&quot;total_i&quot;:86759,&quot;total_ci&quot;:62462,&quot;bias&quot;:-103,&quot;incidents&quot;:43445,&quot;coincidents&quot;:16309},{&quot;total_i&quot;:86108,&quot;total_ci&quot;:62313,&quot;bias&quot;:-214,&quot;incidents&quot;:43090,&quot;coincidents&quot;:16063},{&quot;total_i&quot;:86582,&quot;total_ci&quot;:62406,&quot;bias&quot;:20,&quot;incidents&quot;:43314,&quot;coincidents&quot;:15253},{&quot;total_i&quot;:86524,&quot;total_ci&quot;:62245,&quot;bias&quot;:459,&quot;incidents&quot;:43101,&quot;coincidents&quot;:14877},{&quot;total_i&quot;:87441,&quot;total_ci&quot;:62327,&quot;bias&quot;:-109,&quot;incidents&quot;:43605,&quot;coincidents&quot;:14599},{&quot;total_i&quot;:87259,&quot;total_ci&quot;:62766,&quot;bias&quot;:-143,&quot;incidents&quot;:43907,&quot;coincidents&quot;:13969},{&quot;total_i&quot;:87610,&quot;total_ci&quot;:62340,&quot;bias&quot;:-14,&quot;incidents&quot;:43938,&quot;coincidents&quot;:13455},{&quot;total_i&quot;:88602,&quot;total_ci&quot;:62704,&quot;bias&quot;:201,&quot;incidents&quot;:44151,&quot;coincidents&quot;:13019},{&quot;total_i&quot;:89124,&quot;total_ci&quot;:62196,&quot;bias&quot;:-150,&quot;incidents&quot;:44590,&quot;coincidents&quot;:12288},{&quot;total_i&quot;:89642,&quot;total_ci&quot;:62262,&quot;bias&quot;:-221,&quot;incidents&quot;:44749,&quot;coincidents&quot;:12073},{&quot;total_i&quot;:91170,&quot;total_ci&quot;:62658,&quot;bias&quot;:-16,&quot;incidents&quot;:45556,&quot;coincidents&quot;:11523},{&quot;total_i&quot;:92754,&quot;total_ci&quot;:62495,&quot;bias&quot;:-244,&quot;incidents&quot;:46572,&quot;coincidents&quot;:10891},{&quot;total_i&quot;:93627,&quot;total_ci&quot;:62540,&quot;bias&quot;:222,&quot;incidents&quot;:46860,&quot;coincidents&quot;:10346},{&quot;total_i&quot;:95169,&quot;total_ci&quot;:62678,&quot;bias&quot;:424,&quot;incidents&quot;:47296,&quot;coincidents&quot;:10065},{&quot;total_i&quot;:96816,&quot;total_ci&quot;:63012,&quot;bias&quot;:34,&quot;incidents&quot;:48350,&quot;coincidents&quot;:9595},{&quot;total_i&quot;:99162,&quot;total_ci&quot;:62489,&quot;bias&quot;:50,&quot;incidents&quot;:49472,&quot;coincidents&quot;:9195},{&quot;total_i&quot;:101013,&quot;total_ci&quot;:62623,&quot;bias&quot;:43,&quot;incidents&quot;:50409,&quot;coincidents&quot;:8597},{&quot;total_i&quot;:103034,&quot;total_ci&quot;:62926,&quot;bias&quot;:-265,&quot;incidents&quot;:51843,&quot;coincidents&quot;:8085},{&quot;total_i&quot;:106299,&quot;total_ci&quot;:63052,&quot;bias&quot;:-239,&quot;incidents&quot;:53147,&quot;coincidents&quot;:7527},{&quot;total_i&quot;:108299,&quot;total_ci&quot;:62682,&quot;bias&quot;:671,&quot;incidents&quot;:54341,&quot;coincidents&quot;:7089},{&quot;total_i&quot;:112162,&quot;total_ci&quot;:62445,&quot;bias&quot;:-10,&quot;incidents&quot;:56030,&quot;coincidents&quot;:6550},{&quot;total_i&quot;:115541,&quot;total_ci&quot;:62040,&quot;bias&quot;:118,&quot;incidents&quot;:57888,&quot;coincidents&quot;:6130},{&quot;total_i&quot;:120208,&quot;total_ci&quot;:62465,&quot;bias&quot;:-58,&quot;incidents&quot;:60054,&quot;coincidents&quot;:5496},{&quot;total_i&quot;:124978,&quot;total_ci&quot;:62737,&quot;bias&quot;:7,&quot;incidents&quot;:62541,&quot;coincidents&quot;:5139},{&quot;total_i&quot;:129762,&quot;total_ci&quot;:62441,&quot;bias&quot;:52,&quot;incidents&quot;:64786,&quot;coincidents&quot;:4685},{&quot;total_i&quot;:134847,&quot;total_ci&quot;:62357,&quot;bias&quot;:-38,&quot;incidents&quot;:67306,&quot;coincidents&quot;:4131},{&quot;total_i&quot;:141691,&quot;total_ci&quot;:62691,&quot;bias&quot;:224,&quot;incidents&quot;:70640,&quot;coincidents&quot;:3737},{&quot;total_i&quot;:150292,&quot;total_ci&quot;:62719,&quot;bias&quot;:53,&quot;incidents&quot;:75175,&quot;coincidents&quot;:3182},{&quot;total_i&quot;:159789,&quot;total_ci&quot;:62774,&quot;bias&quot;:281,&quot;incidents&quot;:79903,&quot;coincidents&quot;:2648},{&quot;total_i&quot;:171249,&quot;total_ci&quot;:62871,&quot;bias&quot;:430,&quot;incidents&quot;:85292,&quot;coincidents&quot;:2212},{&quot;total_i&quot;:185391,&quot;total_ci&quot;:62325,&quot;bias&quot;:-343,&quot;incidents&quot;:92863,&quot;coincidents&quot;:1656},{&quot;total_i&quot;:205434,&quot;total_ci&quot;:62504,&quot;bias&quot;:-351,&quot;incidents&quot;:102955,&quot;coincidents&quot;:1192},{&quot;total_i&quot;:237078,&quot;total_ci&quot;:62243,&quot;bias&quot;:140,&quot;incidents&quot;:118700,&quot;coincidents&quot;:741},{&quot;total_i&quot;:321916,&quot;total_ci&quot;:61822,&quot;bias&quot;:-381,&quot;incidents&quot;:160829,&quot;coincidents&quot;:239}],&quot;s_data&quot;:[{&quot;s_max&quot;:2,&quot;s_angles&quot;:[0,8,12,14]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[1,2,6,12]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[2,6,9,12]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[3,8,9,11]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[4,9,12,14]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[5,6,12,14]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[6,2,1,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[7,8,12,14]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[8,3,2,1]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[9,6,2,1]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[10,9,6,5]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[11,9,8,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[12,6,2,1]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[13,12,8,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[14,12,8,0]},{&quot;s_max&quot;:1.9375,&quot;s_angles&quot;:[15,15,15,15]}]},&quot;Custom Naive HVT 0&quot;:{&quot;result&quot;:[{&quot;total_i&quot;:323410,&quot;total_ci&quot;:62754,&quot;bias&quot;:18,&quot;incidents&quot;:161488,&quot;coincidents&quot;:31585},{&quot;total_i&quot;:236487,&quot;total_ci&quot;:62414,&quot;bias&quot;:-231,&quot;incidents&quot;:118757,&quot;coincidents&quot;:31066},{&quot;total_i&quot;:205919,&quot;total_ci&quot;:62493,&quot;bias&quot;:245,&quot;incidents&quot;:103061,&quot;coincidents&quot;:31283},{&quot;total_i&quot;:185378,&quot;total_ci&quot;:62133,&quot;bias&quot;:207,&quot;incidents&quot;:93507,&quot;coincidents&quot;:30905},{&quot;total_i&quot;:171208,&quot;total_ci&quot;:62421,&quot;bias&quot;:-212,&quot;incidents&quot;:86892,&quot;coincidents&quot;:31280},{&quot;total_i&quot;:158866,&quot;total_ci&quot;:62759,&quot;bias&quot;:-77,&quot;incidents&quot;:81427,&quot;coincidents&quot;:31037},{&quot;total_i&quot;:148816,&quot;total_ci&quot;:62610,&quot;bias&quot;:-246,&quot;incidents&quot;:77172,&quot;coincidents&quot;:30806},{&quot;total_i&quot;:141790,&quot;total_ci&quot;:62444,&quot;bias&quot;:-9,&quot;incidents&quot;:74153,&quot;coincidents&quot;:30481},{&quot;total_i&quot;:135381,&quot;total_ci&quot;:62438,&quot;bias&quot;:435,&quot;incidents&quot;:71489,&quot;coincidents&quot;:30304},{&quot;total_i&quot;:128905,&quot;total_ci&quot;:62294,&quot;bias&quot;:-717,&quot;incidents&quot;:69017,&quot;coincidents&quot;:29799},{&quot;total_i&quot;:124023,&quot;total_ci&quot;:62688,&quot;bias&quot;:490,&quot;incidents&quot;:67362,&quot;coincidents&quot;:29922},{&quot;total_i&quot;:119278,&quot;total_ci&quot;:61789,&quot;bias&quot;:522,&quot;incidents&quot;:65696,&quot;coincidents&quot;:28986},{&quot;total_i&quot;:115801,&quot;total_ci&quot;:62596,&quot;bias&quot;:243,&quot;incidents&quot;:65075,&quot;coincidents&quot;:29116},{&quot;total_i&quot;:111528,&quot;total_ci&quot;:62820,&quot;bias&quot;:-41,&quot;incidents&quot;:63833,&quot;coincidents&quot;:28574},{&quot;total_i&quot;:108728,&quot;total_ci&quot;:63196,&quot;bias&quot;:36,&quot;incidents&quot;:63150,&quot;coincidents&quot;:28393},{&quot;total_i&quot;:106488,&quot;total_ci&quot;:62297,&quot;bias&quot;:404,&quot;incidents&quot;:63094,&quot;coincidents&quot;:27461},{&quot;total_i&quot;:103627,&quot;total_ci&quot;:62410,&quot;bias&quot;:295,&quot;incidents&quot;:62567,&quot;coincidents&quot;:27158},{&quot;total_i&quot;:100994,&quot;total_ci&quot;:61966,&quot;bias&quot;:-175,&quot;incidents&quot;:62027,&quot;coincidents&quot;:26144},{&quot;total_i&quot;:98545,&quot;total_ci&quot;:62380,&quot;bias&quot;:-347,&quot;incidents&quot;:62023,&quot;coincidents&quot;:25760},{&quot;total_i&quot;:97443,&quot;total_ci&quot;:62423,&quot;bias&quot;:177,&quot;incidents&quot;:62587,&quot;coincidents&quot;:25161},{&quot;total_i&quot;:95234,&quot;total_ci&quot;:62327,&quot;bias&quot;:251,&quot;incidents&quot;:62363,&quot;coincidents&quot;:24330},{&quot;total_i&quot;:94031,&quot;total_ci&quot;:62955,&quot;bias&quot;:474,&quot;incidents&quot;:62654,&quot;coincidents&quot;:23882},{&quot;total_i&quot;:92644,&quot;total_ci&quot;:62330,&quot;bias&quot;:-450,&quot;incidents&quot;:61528,&quot;coincidents&quot;:22751},{&quot;total_i&quot;:90841,&quot;total_ci&quot;:62757,&quot;bias&quot;:-58,&quot;incidents&quot;:60388,&quot;coincidents&quot;:22244},{&quot;total_i&quot;:89836,&quot;total_ci&quot;:62425,&quot;bias&quot;:-83,&quot;incidents&quot;:59607,&quot;coincidents&quot;:21049},{&quot;total_i&quot;:89779,&quot;total_ci&quot;:62842,&quot;bias&quot;:-507,&quot;incidents&quot;:59649,&quot;coincidents&quot;:20401},{&quot;total_i&quot;:88587,&quot;total_ci&quot;:62614,&quot;bias&quot;:-93,&quot;incidents&quot;:59001,&quot;coincidents&quot;:19579},{&quot;total_i&quot;:88121,&quot;total_ci&quot;:62012,&quot;bias&quot;:-19,&quot;incidents&quot;:58853,&quot;coincidents&quot;:18636},{&quot;total_i&quot;:87437,&quot;total_ci&quot;:62600,&quot;bias&quot;:-103,&quot;incidents&quot;:58097,&quot;coincidents&quot;:17914},{&quot;total_i&quot;:87333,&quot;total_ci&quot;:62519,&quot;bias&quot;:-404,&quot;incidents&quot;:58296,&quot;coincidents&quot;:16978},{&quot;total_i&quot;:87573,&quot;total_ci&quot;:62748,&quot;bias&quot;:100,&quot;incidents&quot;:58158,&quot;coincidents&quot;:16314},{&quot;total_i&quot;:86886,&quot;total_ci&quot;:62329,&quot;bias&quot;:452,&quot;incidents&quot;:58030,&quot;coincidents&quot;:15532},{&quot;total_i&quot;:86651,&quot;total_ci&quot;:62286,&quot;bias&quot;:147,&quot;incidents&quot;:57571,&quot;coincidents&quot;:14655},{&quot;total_i&quot;:86897,&quot;total_ci&quot;:62230,&quot;bias&quot;:223,&quot;incidents&quot;:57747,&quot;coincidents&quot;:13919},{&quot;total_i&quot;:86912,&quot;total_ci&quot;:62201,&quot;bias&quot;:16,&quot;incidents&quot;:57942,&quot;coincidents&quot;:12838},{&quot;total_i&quot;:87142,&quot;total_ci&quot;:63040,&quot;bias&quot;:-310,&quot;incidents&quot;:58200,&quot;coincidents&quot;:12584},{&quot;total_i&quot;:87883,&quot;total_ci&quot;:62641,&quot;bias&quot;:151,&quot;incidents&quot;:58119,&quot;coincidents&quot;:11429},{&quot;total_i&quot;:88401,&quot;total_ci&quot;:62734,&quot;bias&quot;:-147,&quot;incidents&quot;:58663,&quot;coincidents&quot;:10787},{&quot;total_i&quot;:89247,&quot;total_ci&quot;:62861,&quot;bias&quot;:-235,&quot;incidents&quot;:59215,&quot;coincidents&quot;:9959},{&quot;total_i&quot;:89991,&quot;total_ci&quot;:62652,&quot;bias&quot;:189,&quot;incidents&quot;:59845,&quot;coincidents&quot;:9367},{&quot;total_i&quot;:90990,&quot;total_ci&quot;:62818,&quot;bias&quot;:60,&quot;incidents&quot;:60520,&quot;coincidents&quot;:8593},{&quot;total_i&quot;:92815,&quot;total_ci&quot;:62288,&quot;bias&quot;:-117,&quot;incidents&quot;:61653,&quot;coincidents&quot;:7931},{&quot;total_i&quot;:93739,&quot;total_ci&quot;:62521,&quot;bias&quot;:-3,&quot;incidents&quot;:62299,&quot;coincidents&quot;:7448},{&quot;total_i&quot;:95261,&quot;total_ci&quot;:62593,&quot;bias&quot;:-191,&quot;incidents&quot;:62387,&quot;coincidents&quot;:6597},{&quot;total_i&quot;:96734,&quot;total_ci&quot;:62620,&quot;bias&quot;:69,&quot;incidents&quot;:62011,&quot;coincidents&quot;:6182},{&quot;total_i&quot;:98966,&quot;total_ci&quot;:62527,&quot;bias&quot;:126,&quot;incidents&quot;:61842,&quot;coincidents&quot;:5418},{&quot;total_i&quot;:100871,&quot;total_ci&quot;:62401,&quot;bias&quot;:-517,&quot;incidents&quot;:61961,&quot;coincidents&quot;:4970},{&quot;total_i&quot;:103255,&quot;total_ci&quot;:62186,&quot;bias&quot;:112,&quot;incidents&quot;:62394,&quot;coincidents&quot;:4347},{&quot;total_i&quot;:105889,&quot;total_ci&quot;:61867,&quot;bias&quot;:26,&quot;incidents&quot;:62196,&quot;coincidents&quot;:3826},{&quot;total_i&quot;:108409,&quot;total_ci&quot;:62632,&quot;bias&quot;:114,&quot;incidents&quot;:62944,&quot;coincidents&quot;:3415},{&quot;total_i&quot;:111787,&quot;total_ci&quot;:62638,&quot;bias&quot;:-82,&quot;incidents&quot;:63674,&quot;coincidents&quot;:2957},{&quot;total_i&quot;:115133,&quot;total_ci&quot;:62826,&quot;bias&quot;:290,&quot;incidents&quot;:64134,&quot;coincidents&quot;:2542},{&quot;total_i&quot;:119510,&quot;total_ci&quot;:62903,&quot;bias&quot;:-397,&quot;incidents&quot;:66003,&quot;coincidents&quot;:2078},{&quot;total_i&quot;:123873,&quot;total_ci&quot;:62400,&quot;bias&quot;:-274,&quot;incidents&quot;:67170,&quot;coincidents&quot;:1757},{&quot;total_i&quot;:130249,&quot;total_ci&quot;:62010,&quot;bias&quot;:614,&quot;incidents&quot;:69514,&quot;coincidents&quot;:1472},{&quot;total_i&quot;:135228,&quot;total_ci&quot;:62472,&quot;bias&quot;:21,&quot;incidents&quot;:71683,&quot;coincidents&quot;:1248},{&quot;total_i&quot;:142169,&quot;total_ci&quot;:62438,&quot;bias&quot;:535,&quot;incidents&quot;:74543,&quot;coincidents&quot;:979},{&quot;total_i&quot;:149655,&quot;total_ci&quot;:62039,&quot;bias&quot;:280,&quot;incidents&quot;:77122,&quot;coincidents&quot;:664},{&quot;total_i&quot;:159709,&quot;total_ci&quot;:62512,&quot;bias&quot;:-32,&quot;incidents&quot;:81902,&quot;coincidents&quot;:548},{&quot;total_i&quot;:170668,&quot;total_ci&quot;:62923,&quot;bias&quot;:450,&quot;incidents&quot;:86724,&quot;coincidents&quot;:357},{&quot;total_i&quot;:185276,&quot;total_ci&quot;:62605,&quot;bias&quot;:65,&quot;incidents&quot;:94093,&quot;coincidents&quot;:195},{&quot;total_i&quot;:205855,&quot;total_ci&quot;:62267,&quot;bias&quot;:236,&quot;incidents&quot;:103580,&quot;coincidents&quot;:91},{&quot;total_i&quot;:236976,&quot;total_ci&quot;:62657,&quot;bias&quot;:-175,&quot;incidents&quot;:118999,&quot;coincidents&quot;:33},{&quot;total_i&quot;:322942,&quot;total_ci&quot;:62429,&quot;bias&quot;:302,&quot;incidents&quot;:161584,&quot;coincidents&quot;:7}],&quot;s_data&quot;:[{&quot;s_max&quot;:2,&quot;s_angles&quot;:[0,0,4,12]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[1,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[2,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[3,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[4,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[5,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[6,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[7,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[8,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[9,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[10,0,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[11,3,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[12,4,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[13,4,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[14,4,0,0]},{&quot;s_max&quot;:2,&quot;s_angles&quot;:[15,15,15,15]}]}}</div>
   <script>
     var N_SIML = 4000000;
-    var N_ARES = 32;
-    var results = JSON.parse($("#results-data").text());
-    var n_groups = 0;
-    var items = new vis.DataSet();
-    var groups = new vis.DataSet();
-    var tdata = [];
-    var tdata_idx = {};
-    for (var group_name in results) {
-      groups.add({
-        id: n_groups,
-        content: group_name
-      });
-      var hvt_res = results[group_name];
-      for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
-        var x = (((Math.PI / 2) / N_ARES) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
-        var y = hvt_res[i_angle] / (N_SIML / N_ARES);
-        items.add({
-          x: 10 * x,
-          y: y,
-          group: n_groups
-        });
-        var tidx = Math.round(x * 10) / 10;
-        if (!tdata_idx[tidx]) {
-          var rdata = tdata_idx[tidx] = [];
-          rdata.push(tidx);
-          tdata.push(rdata);
-        }
-        tdata_idx[tidx].push(parseFloat(Math.round(y * 1e5) / 1e5).toFixed(4));
-      }
-      $("#result-table thead tr").append(
-        $("<th>").text(group_name)
-      );
-      n_groups++;
-    }
-    for (var row in tdata) {
-      var tr = $("<tr>");
-      var rdata = tdata[row];
-      for (var i = 0; i < rdata.length; i++) {
-        var col = rdata[i];
-        if (i > 1) {
-          col += " (" + (Math.round(((col - rdata[1]) / rdata[1]) * 1e5) / 1e3) + "%)";
-        }
-        tr.append($("<td>").text(col));
-      }
-      $("#result-table tbody").append(tr);
-    }
-    var options = {
-      dataAxis: {
-        left: {
-          format: function(v) {
-            return Math.round(v * 1000) / 1000;
-          },
-          range: {min: 0}
-        }
-      },
-      legend: true,
-      // Hack: The X axis is actually a timeline with miliseconds presented as degrees.
-      start: 0.0,
-      min: 0,
-      end: 900,
-      max: 900,
-      showMajorLabels: false,
-      showMinorLabels: true,
-      format: {minorLabels: {millisecond: "SS"}},
-      timeAxis: {scale: "millisecond", step: 100}
+    var N_ARES = 64;
+    var N_SMAX_AR = 16;
+    var results = JSON.parse($("#result-data").text());
+
+    var itod = function(i_angle, ang_res) {
+      return (((Math.PI / 2) / ang_res) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
     };
-    var container = $("#results-graph").get(0);
-    var graph2d = new vis.Graph2d(container, null, options);
-    graph2d.setGroups(groups);
-    graph2d.setItems(items);
-    window.graph2d = graph2d;
+
+    // Draw coincidents graph.
+    $.plot($("#graph-coincidents"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].coincidents / hvt_res[i_angle].total_ci;
+            data.push([x, y]);
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 0, max: 0.6 }
+    });
+
+    // Draw S max graph.
+    $.plot($("#graph-s-max"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var s_data = results[group_name].s_data;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          var s_angles = null;
+          var s_max = Number.NEGATIVE_INFINITY;
+          for (var i_angle = 0; i_angle < N_SMAX_AR; i_angle++) {
+            var x = itod(i_angle, N_SMAX_AR);
+            var y = s_data[i_angle].s_max;
+            if (y > s_max) {
+              s_max = y;
+              s_angles = s_data[i_angle].s_angles;
+            }
+            data.push([x, y]);
+          }
+          if (s_angles) {
+            $("#table-s-max tbody").append(
+              $("<tr>").append(
+                $("<td>").text(group_name)
+              ).append(
+                $("<td>").text(s_max)
+              ).append(
+                $("<td>").text(s_angles[0])
+              ).append(
+                $("<td>").text(s_angles[1])
+              ).append(
+                $("<td>").text(s_angles[2])
+              ).append(
+                $("<td>").text(s_angles[3])
+              )
+            );
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 1, max: 3 }
+    });
+
+    // Draw incidents graph.
+    $.plot($("#graph-incidents"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].incidents / hvt_res[i_angle].total_i;
+            data.push([x, y]);
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 0.45, max: 0.55 }
+    });
+
+    // Draw bias graph.
+    $.plot($("#graph-bias"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].bias / hvt_res[i_angle].incidents;
+            data.push([x, y]);
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: -0.2, max: 0.2 }
+    });
+
+    // Draw total samples.
+    $.plot($("#graph-total"), (function() {
+        var gdata = [];
+        [0, 1].forEach(function(i) {
+          for (var group_name in results) {
+            var hvt_res = results[group_name].result;
+            var data = [];
+            var dobj = {
+              label: group_name + (i == 0? ", Total iM": ", Total ciM"),
+              data: data
+            };
+            gdata.push(dobj);
+            for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+              var x = itod(i_angle, N_ARES);
+              var y = (i == 0? hvt_res[i_angle].total_i: hvt_res[i_angle].total_ci);
+              data.push([x, y]);
+            }
+          }
+        });
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 }
+    });
   </script>
 </body>
 </html>

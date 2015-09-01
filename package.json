@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node epr-bell.js"
   },
-  "author": "",
+  "repository": "https://github.com/hannes-landeholm/epr-bell.git",
+  "author": "hannes@jumpstarter.io",
   "license": "MPL-2.0",
   "dependencies": {
-    "mustache": "^2.1.3"
+    "mustache": "^2.1.3",
+    "webworker-threads": "^0.5.6"
   }
 }

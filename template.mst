@@ -3,8 +3,7 @@
 <head>
   <title>Bell Inequality Experiment</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.8.0/vis.min.css" rel="stylesheet" type="text/css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
   <style type="text/css">
     table {
       border-collapse: collapse;
@@ -16,96 +15,209 @@
   </style>
 </head>
 <body>
-  <div id="results-data" style="display: none;">{{ results }}</div>
-  <div id="results-graph"></div>
-  <table id="result-table">
+  <h1>Coincidents</h1>
+  <small>
+    Main result, the probability of conincidence in relation to the relative
+    angle of the detectors.
+  </small>
+  <div id="graph-coincidents" style="width: 100%; height: 500px"></div>
+
+  <h1>Maximum S values</h1>
+  <small>
+    Main result, the maximum possible S value for a selected angle as (a).
+    The bell theorem states that it's impossible for any HVT to exceed a
+    maximum S value of 2 for any selected 4 angles.
+  </small>
+  <div id="graph-s-max" style="width: 100%; height: 400px"></div>
+  <table id="table-s-max">
     <thead>
       <tr>
-        <th>Degrees</th>
+        <th>Theory</th>
+        <th>S Max</th>
+        <th>Angle A</th>
+        <th>Angle B</th>
+        <th>Angle C</th>
+        <th>Angle D</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <tr></tr>
+    </tbody>
   </table>
+
+  <h1>Angle incident probability per detector relationship</h1>
+  <small>
+    Hygiene factor for the EPR. There should normally not be a correlation
+    between the angle of measurement and probability of incident per detector
+    as this would be inconsistent with the QM Prediction and violate reality.
+  </small>
+  <div id="graph-incidents" style="width: 100%; height: 300px"></div>
+
+  <h1>Angle A-B detector bias</h1>
+  <small>
+    Hygiene factor for the EPR. There should normally not be any significant
+    bias between the A or B detector for any angle of measurement
+    as this would be inconsistent with the QM Prediction and violate reality.
+  </small>
+  <div id="graph-bias" style="width: 100%; height: 200px"></div>
+
+  <h1>Total samples</h1>
+  <small>
+    Total samples/data points for each respective angle. Displays differences
+    in resolution between angles. There is one respective resolution for
+    incidents and one for coincidents.
+  </small>
+  <div id="graph-total" style="width: 100%; height: 200px"></div>
+
+  <div id="result-data" style="display: none;">{{ results }}</div>
   <script>
     var N_SIML = {{ N_SIML }};
     var N_ARES = {{ N_ARES }};
-    var results = JSON.parse($("#results-data").text());
-    var n_groups = 0;
-    var items = new vis.DataSet();
-    var groups = new vis.DataSet();
-    var tdata = [];
-    var tdata_idx = {};
-    for (var group_name in results) {
-      groups.add({
-        id: n_groups,
-        content: group_name + " Bias"
-      });
-      groups.add({
-        id: n_groups + 1,
-        content: group_name + " Incidents"
-      });
-      groups.add({
-        id: n_groups + 2,
-        content: group_name + " Coincidents"
-      });
-      var hvt_res = results[group_name];
-      for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
-        var x = (((Math.PI / 2) / N_ARES) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
-        var y_bias = hvt_res[i_angle].bias / (N_SIML / N_ARES);
-        var y_in = hvt_res[i_angle].incidents / (N_SIML / N_ARES);
-        var y_coi = hvt_res[i_angle].coincidents / (N_SIML / N_ARES);
-        items.add({x: 10 * x, y: y_bias, group: n_groups});
-        items.add({x: 10 * x, y: y_in, group: n_groups + 1});
-        items.add({x: 10 * x, y: y_coi, group: n_groups + 2});
-        var tidx = Math.round(x * 10) / 10;
-        if (!tdata_idx[tidx]) {
-          var rdata = tdata_idx[tidx] = [];
-          rdata.push(tidx);
-          tdata.push(rdata);
-        }
-        tdata_idx[tidx].push(parseFloat(Math.round(y_coi * 1e5) / 1e5).toFixed(4));
-      }
-      $("#result-table thead tr").append(
-        $("<th>").text(group_name)
-      );
-      n_groups += 3;
-    }
-    for (var row in tdata) {
-      var tr = $("<tr>");
-      var rdata = tdata[row];
-      for (var i = 0; i < rdata.length; i++) {
-        var col = rdata[i];
-        if (i > 1) {
-          col += " (" + (Math.round(((col - rdata[1]) / rdata[1]) * 1e5) / 1e3) + "%)";
-        }
-        tr.append($("<td>").text(col));
-      }
-      $("#result-table tbody").append(tr);
-    }
-    var options = {
-      dataAxis: {
-        left: {
-          format: function(v) {
-            return Math.round(v * 1000) / 1000;
+    var N_SMAX_AR = {{ N_SMAX_AR }};
+    var results = JSON.parse($("#result-data").text());
+
+    var itod = function(i_angle, ang_res) {
+      return (((Math.PI / 2) / ang_res) / 2) * (i_angle * 2 + 1) * 180 / Math.PI;
+    };
+
+    // Draw coincidents graph.
+    $.plot($("#graph-coincidents"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].coincidents / hvt_res[i_angle].total_ci;
+            data.push([x, y]);
           }
         }
-      },
-      legend: true,
-      // Hack: The X axis is actually a timeline with miliseconds presented as degrees.
-      start: 0.0,
-      min: 0,
-      end: 900,
-      max: 900,
-      showMajorLabels: false,
-      showMinorLabels: true,
-      format: {minorLabels: {millisecond: "SS"}},
-      timeAxis: {scale: "millisecond", step: 100}
-    };
-    var container = $("#results-graph").get(0);
-    var graph2d = new vis.Graph2d(container, null, options);
-    graph2d.setGroups(groups);
-    graph2d.setItems(items);
-    window.graph2d = graph2d;
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 0, max: 0.6 }
+    });
+
+    // Draw S max graph.
+    $.plot($("#graph-s-max"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var s_data = results[group_name].s_data;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          var s_angles = null;
+          var s_max = Number.NEGATIVE_INFINITY;
+          for (var i_angle = 0; i_angle < N_SMAX_AR; i_angle++) {
+            var x = itod(i_angle, N_SMAX_AR);
+            var y = s_data[i_angle].s_max;
+            if (y > s_max) {
+              s_max = y;
+              s_angles = s_data[i_angle].s_angles;
+            }
+            data.push([x, y]);
+          }
+          if (s_angles) {
+            $("#table-s-max tbody").append(
+              $("<tr>").append(
+                $("<td>").text(group_name)
+              ).append(
+                $("<td>").text(s_max)
+              ).append(
+                $("<td>").text(s_angles[0])
+              ).append(
+                $("<td>").text(s_angles[1])
+              ).append(
+                $("<td>").text(s_angles[2])
+              ).append(
+                $("<td>").text(s_angles[3])
+              )
+            );
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 1, max: 3 }
+    });
+
+    // Draw incidents graph.
+    $.plot($("#graph-incidents"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].incidents / hvt_res[i_angle].total_i;
+            data.push([x, y]);
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: 0.45, max: 0.55 }
+    });
+
+    // Draw bias graph.
+    $.plot($("#graph-bias"), (function() {
+        var gdata = [];
+        for (var group_name in results) {
+          var hvt_res = results[group_name].result;
+          var data = [];
+          var dobj = {
+            label: group_name,
+            data: data
+          };
+          gdata.push(dobj);
+          for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+            var x = itod(i_angle, N_ARES);
+            var y = hvt_res[i_angle].bias / hvt_res[i_angle].incidents;
+            data.push([x, y]);
+          }
+        }
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 },
+      yaxis: { min: -0.2, max: 0.2 }
+    });
+
+    // Draw total samples.
+    $.plot($("#graph-total"), (function() {
+        var gdata = [];
+        [0, 1].forEach(function(i) {
+          for (var group_name in results) {
+            var hvt_res = results[group_name].result;
+            var data = [];
+            var dobj = {
+              label: group_name + (i == 0? ", Total iM": ", Total ciM"),
+              data: data
+            };
+            gdata.push(dobj);
+            for (var i_angle = 0; i_angle < N_ARES; i_angle++) {
+              var x = itod(i_angle, N_ARES);
+              var y = (i == 0? hvt_res[i_angle].total_i: hvt_res[i_angle].total_ci);
+              data.push([x, y]);
+            }
+          }
+        });
+        return gdata;
+      })(), {
+      xaxis: { min: 0, max: 90 }
+    });
   </script>
 </body>
 </html>

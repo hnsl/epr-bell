@@ -1,4 +1,4 @@
-var util = require('./util.js');
+var etc = require('./etc.js');
 
 module.exports = [
     // Standard HVT as defined in the paper in section
@@ -10,7 +10,7 @@ module.exports = [
             // manner that uniformly covers the whole range of possible
             // polarizations."
             // We interpret this as:
-            var λ = p_angle + (util.rndFn() - 0.5) * Math.PI / 2;
+            var λ = p_angle + (etc.rndFn() - 0.5) * Math.PI / 2;
             return [λ, λ];
         },
         filter: function(γ, λ) {
@@ -37,7 +37,7 @@ module.exports = [
             // probability formula of photon passing a polarizer.
             var Θ = Math.abs(γ - λ);
             var b = 1.33; // Curve fitting factor.
-            return util.rndFn() < b * (0.5 + 0.5 * Math.cos(2 * Θ));
+            return etc.rndFn() < b * (0.5 + 0.5 * Math.cos(2 * Θ));
         }
     }
 ];
