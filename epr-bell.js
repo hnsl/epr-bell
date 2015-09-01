@@ -63,11 +63,11 @@ hvts.forEach(function(hvt) {
             var a2 = a1 + d_angle;
             var angles = (etc.coinFlipFn()? [a1, a2]: [a2, a1]);
             var incident = new Array(2);
-            (etc.coinFlipFn()? [0, 1]: [1, 0]).forEach(function(v) {
-                // Run the HVT filter function on the filter angle and hidden state.
-                // It should deterime if we get a detection or not.
-                incident[v] = hvt.filter(angles[v], hidden_state[v]);
-            });
+            // Run the HVT filter function on the filter angle and hidden state.
+            // It should deterime if we get a detection or not.
+            var i0 = (etc.coinFlipFn()? 1: 0), i1 = 1 - i0;
+            incident[i0] = hvt.filter(angles[i0], hidden_state[i0]);
+            incident[i1] = hvt.filter(angles[i1], hidden_state[i1]);
             // Simulate coincidence detection. Detectors behind the filter register
             // the photons and the information is sent via a classic channel and
             // compared.
@@ -83,14 +83,14 @@ hvts.forEach(function(hvt) {
             // Total angle measurements is not possible to measure in the
             // original experiment but can be approximated by assuming a constant
             // flux of photon pairs and does not correlate with polarizer settings.
-            [0, 1].forEach(function(v) {
+            for (var v = 0; v < 2; v++) {
                 var i_angle = radtoiFn(angles[v], N_ARES);
                 result[i_angle].total_i++;
                 if (incident[v]) {
                     result[i_angle].incidents++;
                     result[i_angle].bias += (v == 0? -1: 1);
                 }
-            });
+            }
             // Update E statistics for the measured angles.
             // E(a, b) = Pvv(a, b) + Phh(a, b) - Pvh(a, b) - Phv(a, b)
             // "This incorporates all possible measurement outcomes and"
