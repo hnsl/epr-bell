@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Bell Inequality Experiment</title>
+  <meta charset="UTF-8">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
   <style type="text/css">
@@ -16,24 +17,26 @@
 </head>
 <body>
   <h1>Coincidents</h1>
-  <small>
+  <p>
     Main result, the probability of conincidence in relation to the relative
     angle of the detectors.
-  </small>
+  </p>
   <div id="graph-coincidents" style="width: 100%; height: 500px"></div>
 
   <h1>Maximum S values</h1>
-  <small>
+  <p>
     Main result, the maximum possible S value for a selected angle as (a).
     The bell theorem states that it's impossible for any HVT to exceed a
     maximum S value of 2 for any selected 4 angles.
-  </small>
+    A perfect max S value is 2√2 = 2.83.
+  </p>
   <div id="graph-s-max" style="width: 100%; height: 400px"></div>
   <table id="table-s-max">
     <thead>
       <tr>
         <th>Theory</th>
         <th>S Max</th>
+        <th>Accuracy</th>
         <th>Angle A</th>
         <th>Angle B</th>
         <th>Angle C</th>
@@ -46,27 +49,27 @@
   </table>
 
   <h1>Angle incident probability per detector relationship</h1>
-  <small>
+  <p>
     Hygiene factor for the EPR. There should normally not be a correlation
     between the angle of measurement and probability of incident per detector
     as this would be inconsistent with the QM Prediction and violate reality.
-  </small>
+  </p>
   <div id="graph-incidents" style="width: 100%; height: 300px"></div>
 
   <h1>Angle A-B detector bias</h1>
-  <small>
+  <p>
     Hygiene factor for the EPR. There should normally not be any significant
     bias between the A or B detector for any angle of measurement
     as this would be inconsistent with the QM Prediction and violate reality.
-  </small>
+  </p>
   <div id="graph-bias" style="width: 100%; height: 200px"></div>
 
   <h1>Total samples</h1>
-  <small>
+  <p>
     Total samples/data points for each respective angle. Displays differences
     in resolution between angles. There is one respective resolution for
     incidents and one for coincidents.
-  </small>
+  </p>
   <div id="graph-total" style="width: 100%; height: 200px"></div>
 
   <div id="result-data" style="display: none;">{{ results }}</div>
@@ -107,6 +110,9 @@
     $.plot($("#graph-s-max"), (function() {
         var gdata = [];
         for (var group_name in results) {
+          if (group_name == "QM Prediction") {
+              continue;
+          }
           var s_data = results[group_name].s_data;
           var data = [];
           var dobj = {
@@ -125,23 +131,28 @@
             }
             data.push([x, y]);
           }
-          if (s_angles) {
-            $("#table-s-max tbody").append(
-              $("<tr>").append(
-                $("<td>").text(group_name)
-              ).append(
-                $("<td>").text(s_max)
-              ).append(
-                $("<td>").text(s_angles[0])
-              ).append(
-                $("<td>").text(s_angles[1])
-              ).append(
-                $("<td>").text(s_angles[2])
-              ).append(
-                $("<td>").text(s_angles[3])
-              )
-            );
-          }
+          var diff = s_max / (2 * Math.SQRT2);
+          var stdev2 = 0.9545;
+          var diff1 = (diff > 1)? 1 / diff: diff;
+          var is_ok = diff1 > stdev2;
+          $("#table-s-max tbody").append(
+            $("<tr>").append(
+              $("<td>").text(group_name)
+            ).append(
+              $("<td>").text(s_max)
+            ).append(
+              $("<td>").text((Math.round(diff * 10000) / 100) + " %")
+                .css("color", is_ok? "green": "red")
+            ).append(
+              $("<td>").text(Math.round(itod(s_angles[0], N_SMAX_AR)))
+            ).append(
+              $("<td>").text(Math.round(itod(s_angles[1], N_SMAX_AR)))
+            ).append(
+              $("<td>").text(Math.round(itod(s_angles[2], N_SMAX_AR)))
+            ).append(
+              $("<td>").text(Math.round(itod(s_angles[3], N_SMAX_AR)))
+            )
+          );
         }
         return gdata;
       })(), {
@@ -192,7 +203,7 @@
         return gdata;
       })(), {
       xaxis: { min: 0, max: 90 },
-      yaxis: { min: -0.2, max: 0.2 }
+      yaxis: { min: -0.05, max: 0.05 }
     });
 
     // Draw total samples.

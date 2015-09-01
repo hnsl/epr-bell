@@ -18,31 +18,8 @@ var radtoiFn = function(rad, ang_res) {
     return Math.floor(ang_res * rad / (Math.PI / 2));
 };
 
-// Create a reference result which represents the QM prediction and the actual
-// experimental results.
-var results = {};
-(function() {
-    var result = new Array(N_ARES);
-    for (var i = 0; i < N_ARES; i++) {
-        var p_angle = (((Math.PI / 2) / N_ARES) / 2) * (i * 2 + 1);
-        result[i] = {
-            total_i: (N_SIML / N_ARES) * 2,
-            total_ci: (N_SIML / N_ARES),
-            bias: 0,
-            incidents: (N_SIML / N_ARES),
-            coincidents: Math.round((N_SIML / N_ARES) * 0.5 * (0.5 + 0.5 * Math.cos(2 * p_angle)))
-        };
-    }
-    results["QM Prediction"] = {
-        result: result,
-        s_data: etc.newInitArrayFn(N_SMAX_AR, {
-            s_max: undefined,
-            s_angles: undefined
-        })
-    };
-})();
-
 // Iterate through our hidden variable theories and test them one-by-one.
+var results = {};
 hvts.forEach(function(hvt) {
     var e_result = etc.newInitArrayFn(N_SMAX_AR * N_SMAX_AR, {
         total: 0,
@@ -116,16 +93,16 @@ hvts.forEach(function(hvt) {
     (function() {
         for (var a1_i = 0; a1_i < N_SMAX_AR; a1_i++)
         for (var a2_i = 0; a2_i < N_SMAX_AR; a2_i++) {
+            var e_i = a1_i * N_SMAX_AR + a2_i;
             if (a2_i < a1_i) {
                 e_result[e_i] = undefined;
             } else {
                 // We don't want too low resolution, otherwise the Smax calculation is compromised.
-                var e_i = a1_i * N_SMAX_AR + a2_i;
                 var total = e_result[e_i].total;
                 if (total < (N_SIML / (N_SMAX_AR * N_SMAX_AR)) / 4) {
                     throw ("angles (" + a1_i + ", " + a2_i + "), (" + e_i + ") has too low resolution (" + total + "), increase N_SIML or decrease N_ARES!");
                 }
-                e_result[e_i] = e_result[e_i].value / total;
+                e_result[e_i].value /= total;
             }
         }
     })();
@@ -144,12 +121,14 @@ hvts.forEach(function(hvt) {
             for (var b_i = 0; b_i < N_SMAX_AR; b_i++)
             for (var ap_i = 0; ap_i < N_SMAX_AR; ap_i++)
             for (var bp_i = 0; bp_i < N_SMAX_AR; bp_i++) {
-                var S = getE(a_i, b_i) - getE(a_i, bp_i) + getE(ap_i, b_i) + getE(ap_i, bp_i);
+                var S = getE(a_i, b_i).value - getE(a_i, bp_i).value
+                    + getE(ap_i, b_i).value + getE(ap_i, bp_i).value;
                 if (S > s_max) {
                     s_max = S;
                     s_angles = [a_i, b_i, ap_i, bp_i];
                 }
             }
+            // TODO: Calculate uncertainty for this S max measurement.
             s_data[a_i] = {
                 // We don't pretend we have more resolution than N_SMAX_AR.
                 s_max: Math.round(s_max * N_SMAX_AR) / N_SMAX_AR,
@@ -163,6 +142,29 @@ hvts.forEach(function(hvt) {
         s_data: s_data
     };
 });
+
+// Create a reference result which represents the QM prediction and the actual
+// experimental results.
+(function() {
+    var result = new Array(N_ARES);
+    for (var i = 0; i < N_ARES; i++) {
+        var p_angle = (((Math.PI / 2) / N_ARES) / 2) * (i * 2 + 1);
+        result[i] = {
+            total_i: (N_SIML / N_ARES) * 2,
+            total_ci: (N_SIML / N_ARES),
+            bias: 0,
+            incidents: (N_SIML / N_ARES),
+            coincidents: Math.round((N_SIML / N_ARES) * 0.5 * (0.5 + 0.5 * Math.cos(2 * p_angle)))
+        };
+    }
+    results["QM Prediction"] = {
+        result: result,
+        s_data: etc.newInitArrayFn(N_SMAX_AR, {
+            s_max: undefined,
+            s_angles: undefined
+        })
+    };
+})();
 
 //x-dbg/ console.log(util.inspect(results, false, null));
 //x-dbg/ process.exit(0);

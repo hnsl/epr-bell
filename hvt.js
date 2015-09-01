@@ -39,5 +39,24 @@ module.exports = [
             var b = 1.33; // Curve fitting factor.
             return etc.rndFn() < b * (0.5 + 0.5 * Math.cos(2 * Θ));
         }
+    },
+    {
+        name: "Super Luminal HVT",
+        entangle: function(p_angle) {
+            // Shared state.
+            var λ = p_angle;
+            var fn = function(γ) {
+                var Θ = Math.abs(γ - λ);
+                var pass = (etc.rndFn() < (0.5 + 0.5 * Math.cos(2 * Θ)));
+                // FTL transfer of polarisation information,
+                // setting the polarisation of the other photon.
+                λ = γ + (pass? 0: Math.PI / 2);
+                return pass;
+            };
+            return [fn, fn];
+        },
+        filter: function(γ, state) {
+            return state(γ);
+        }
     }
 ];
