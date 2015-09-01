@@ -9,13 +9,25 @@ var hvts = require('./hvt.js');
 var N_SIML = 4e6;
 var N_ARES = 64;
 // We use a special lower angular resolution for the E + Smax search. This is
-// because the brute fore search for the highest S has a complexity of O(n ^ 4)
+// because the brute fore search for the highest S has a complexity of O(n ^ 3)
 // and because we don't get enough data for the (n ^ 2) angle permutations.
 var N_SMAX_AR = 16;
 
 // Converts radians to the respective index.
 var radtoiFn = function(rad, ang_res) {
     return Math.floor(ang_res * rad / (Math.PI / 2));
+};
+
+var maximizeParam = function(from, to, fn) {
+    var best = -Infinity, param = null;
+    for (var i = from; i < to; i++) {
+        var val = fn(i);
+        if (val > best) {
+            best = val;
+            param = i;
+        }
+    }
+    return {value: best, param: param};
 };
 
 // Iterate through our hidden variable theories and test them one-by-one.
@@ -51,11 +63,11 @@ hvts.forEach(function(hvt) {
             var a2 = a1 + d_angle;
             var angles = (etc.coinFlipFn()? [a1, a2]: [a2, a1]);
             var incident = new Array(2);
-            (etc.coinFlipFn()? [0, 1]: [1, 0]).forEach(function(v) {
-                // Run the HVT filter function on the filter angle and hidden state.
-                // It should deterime if we get a detection or not.
-                incident[v] = hvt.filter(angles[v], hidden_state[v]);
-            });
+            // Run the HVT filter function on the filter angle and hidden state.
+            // It should deterime if we get a detection or not.
+            var i0 = (etc.coinFlipFn()? 1: 0), i1 = 1 - i0;
+            incident[i0] = hvt.filter(angles[i0], hidden_state[i0]);
+            incident[i1] = hvt.filter(angles[i1], hidden_state[i1]);
             // Simulate coincidence detection. Detectors behind the filter register
             // the photons and the information is sent via a classic channel and
             // compared.
@@ -71,14 +83,14 @@ hvts.forEach(function(hvt) {
             // Total angle measurements is not possible to measure in the
             // original experiment but can be approximated by assuming a constant
             // flux of photon pairs and does not correlate with polarizer settings.
-            [0, 1].forEach(function(v) {
+            for (var v = 0; v < 2; v++) {
                 var i_angle = radtoiFn(angles[v], N_ARES);
                 result[i_angle].total_i++;
                 if (incident[v]) {
                     result[i_angle].incidents++;
                     result[i_angle].bias += (v == 0? -1: 1);
                 }
-            });
+            }
             // Update E statistics for the measured angles.
             // E(a, b) = Pvv(a, b) + Phh(a, b) - Pvh(a, b) - Phv(a, b)
             // "This incorporates all possible measurement outcomes and"
@@ -116,16 +128,21 @@ hvts.forEach(function(hvt) {
             return e_result[a1_i * N_SMAX_AR + a2_i];
         };
         for (var a_i = 0; a_i < N_SMAX_AR; a_i++) {
-            var s_max = Number.NEGATIVE_INFINITY;
+            var s_max = -Infinity;
             var s_angles = null;
-            for (var b_i = 0; b_i < N_SMAX_AR; b_i++)
-            for (var ap_i = 0; ap_i < N_SMAX_AR; ap_i++)
-            for (var bp_i = 0; bp_i < N_SMAX_AR; bp_i++) {
-                var S = getE(a_i, b_i).value - getE(a_i, bp_i).value
-                    + getE(ap_i, b_i).value + getE(ap_i, bp_i).value;
+            for (var ap_i = 0; ap_i < N_SMAX_AR; ap_i++) {
+                // E(a, b) + E(a', b) and E(a', b') - E(a, b') are independent,
+                // so to maximize their sum, maximize them both individually.
+                var sb = maximizeParam(0, N_SMAX_AR, function(b_i) {
+                    return getE(a_i, b_i).value + getE(ap_i, b_i).value;
+                });
+                var sbp = maximizeParam(0, N_SMAX_AR, function(bp_i) {
+                    return getE(ap_i, bp_i).value - getE(a_i, bp_i).value;
+                });
+                var S = sb.value + sbp.value;
                 if (S > s_max) {
                     s_max = S;
-                    s_angles = [a_i, b_i, ap_i, bp_i];
+                    s_angles = [a_i, sb.param, ap_i, sbp.param];
                 }
             }
             // TODO: Calculate uncertainty for this S max measurement.
