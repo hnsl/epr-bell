@@ -33,7 +33,7 @@ var maximizeParam = function(from, to, fn) {
 // Iterate through our hidden variable theories and test them one-by-one.
 var results = {};
 hvts.forEach(function(hvt) {
-    var e_result = etc.newInitArrayFn(N_SMAX_AR * N_SMAX_AR, {
+    var e_data = etc.newInitArrayFn(N_SMAX_AR * N_SMAX_AR, {
         total: 0,
         value: 0
     });
@@ -97,8 +97,8 @@ hvts.forEach(function(hvt) {
             // "varies from +1 when the polarizations always agree to −1"
             // "when they always disagree"
             var e_i = radtoiFn(a1, N_SMAX_AR) * N_SMAX_AR + radtoiFn(a2, N_SMAX_AR);
-            e_result[e_i].total++;
-            e_result[e_i].value += (incident[0] == incident[1]? 1: -1);
+            e_data[e_i].total++;
+            e_data[e_i].value += (incident[0] == incident[1]? 1: -1);
         }
     })();
     // Determine if e results have enough data and convert value to probability.
@@ -107,14 +107,14 @@ hvts.forEach(function(hvt) {
         for (var a2_i = 0; a2_i < N_SMAX_AR; a2_i++) {
             var e_i = a1_i * N_SMAX_AR + a2_i;
             if (a2_i < a1_i) {
-                e_result[e_i] = undefined;
+                e_data[e_i] = undefined;
             } else {
                 // We don't want too low resolution, otherwise the Smax calculation is compromised.
-                var total = e_result[e_i].total;
+                var total = e_data[e_i].total;
                 if (total < (N_SIML / (N_SMAX_AR * N_SMAX_AR)) / 4) {
                     throw ("angles (" + a1_i + ", " + a2_i + "), (" + e_i + ") has too low resolution (" + total + "), increase N_SIML or decrease N_ARES!");
                 }
-                e_result[e_i].value /= total;
+                e_data[e_i].value /= total;
             }
         }
     })();
@@ -125,7 +125,7 @@ hvts.forEach(function(hvt) {
         var getE = function(a, b) {
             var a1_i = (a < b)? a: b;
             var a2_i = (a < b)? b: a;
-            return e_result[a1_i * N_SMAX_AR + a2_i];
+            return e_data[a1_i * N_SMAX_AR + a2_i];
         };
         for (var a_i = 0; a_i < N_SMAX_AR; a_i++) {
             var s_max = -Infinity;
@@ -156,7 +156,8 @@ hvts.forEach(function(hvt) {
     // Testing HVT done, store coincident results.
     results[hvt.name] = {
         result: result,
-        s_data: s_data
+        s_data: s_data,
+        e_data: e_data
     };
 });
 
@@ -176,10 +177,8 @@ hvts.forEach(function(hvt) {
     }
     results["QM Prediction"] = {
         result: result,
-        s_data: etc.newInitArrayFn(N_SMAX_AR, {
-            s_max: undefined,
-            s_angles: undefined
-        })
+        s_data: undefined,
+        e_data: undefined
     };
 })();
 
